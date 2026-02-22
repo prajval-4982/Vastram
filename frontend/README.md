@@ -1,70 +1,62 @@
-# Getting Started with Create React App
+# Vastram - Premium Laundry & Dry Cleaning E-Commerce Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Vastram is a full-stack e-commerce web application designed for a premium laundry and dry-cleaning service. It features a modern, responsive user interface built with React and Tailwind CSS, backed by a robust Node.js/Express server and MongoDB database.
 
-## Available Scripts
+## 🌟 Key Features
 
-In the project directory, you can run:
+### User Experience
+- **Modern UI/UX**: Beautifully designed interface with smooth gradients, micro-animations, and full Dark Mode support.
+- **Service Catalog**: Browse categorized laundry services (Shirts, Suits, Traditional, Casual, Home Essentials) with distinct, dynamic icons.
+- **Shopping Cart**: Real-time cart management using React Context API.
+- **Mock Checkout Flow**: Simulated payment processing supporting Cash on Delivery, UPI, and Card inputs (uses Razorpay test keys for safe simulation).
+- **User Dashboard**: Customers can track their active and past orders, view membership tiers, and update profiles.
 
-### `npm start`
+### Admin Capabilities
+- **Admin Dashboard**: Dedicated portal protected by role-based access control (RBAC).
+- **Order Management**: View all customer orders and update their statuses through the pipeline (Pending -> Confirmed -> Picked Up -> In Progress -> Ready -> Out for Delivery -> Delivered).
+- **User Analytics**: View registered customers, their membership tiers, total orders, and lifetime spending.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Architecture & Security
+- **Secure Authentication**: JWT-based authentication with bcrypt password hashing.
+- **API Protection**: Axios interceptors handle token attachment and graceful 401/404 redirects.
+- **Data Integrity**: Express-validator ensures all incoming user data (emails, passwords, phones, addresses) is sanitized and correct.
+- **Environment Safety**: Sensitive credentials (MongoDB URI, internal JWT secrets) are secured via `.env` files and strictly excluded from version control.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Tech Stack
 
-### `npm test`
+- **Frontend**: React.js (Vite), React Router v6, Tailwind CSS, Lucide React (Icons), Axios, Context API
+- **Backend**: Node.js, Express.js, MongoDB (Atlas), Mongoose, JSON Web Tokens (JWT), Express-Validator
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Local Development Setup
 
-### `npm run build`
+### 1. Clone the repository
+\`\`\`bash
+git clone https://github.com/prajval-4982/Vastram.git
+cd Vastram
+\`\`\`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 2. Backend Setup
+\`\`\`bash
+cd server
+npm install
+\`\`\`
+- Create a \`.env\` file in the \`server\` directory using \`.env.example\` as a template. You will need your own MongoDB Atlas Connection URI and a generated JWT Secret string.
+- Start the server:
+\`\`\`bash
+npm run start
+\`\`\`
+*(Note: On first boot, the server will automatically seed the database with the default Vastram services catalog).*
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 3. Frontend Setup
+Open a new terminal window:
+\`\`\`bash
+cd frontend
+npm install
+\`\`\`
+- Start the development server (runs on port 5173 by default):
+\`\`\`bash
+npm run dev
+\`\`\`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📝 License
+This project is proprietary software belonging to Vastram.
