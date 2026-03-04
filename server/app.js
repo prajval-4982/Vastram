@@ -28,7 +28,22 @@ app.use(limiter);
 
 // CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      process.env.FRONTEND_URL
+    ];
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    // Allow any Vercel preview deployment for this project
+    if (origin.includes('prajval-4982s-projects.vercel.app') ||
+        origin.includes('vastram') ||
+        allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
