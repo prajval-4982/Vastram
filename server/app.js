@@ -10,6 +10,7 @@ const serviceRoutes = require('./routes/services.js');
 const orderRoutes = require('./routes/orders.js');
 const cartRoutes = require('./routes/cart.js');
 const userRoutes = require('./routes/users.js');
+const paymentRoutes = require('./routes/payment.js');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -53,6 +54,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -101,5 +103,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

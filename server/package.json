@@ -4,7 +4,7 @@
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node scripts/seedData.js && node app.js",
+    "start": "node app.js",
     "seed": "node scripts/seedData.js",
     "seed:force": "node scripts/seedData.js --force",
     "start:prod": "NODE_ENV=production node app.js"
@@ -22,6 +22,8 @@
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.16.3"
+    "mongoose": "^8.16.3",
+    "nodemailer": "^8.0.1",
+    "razorpay": "^2.9.6"
   }
 }

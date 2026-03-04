@@ -26,6 +26,7 @@ router.post('/', [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Order Validation Errors:', JSON.stringify(errors.array(), null, 2));
       return res.status(400).json({
         status: 'error',
         message: 'Validation failed',

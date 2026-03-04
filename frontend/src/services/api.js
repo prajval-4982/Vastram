@@ -74,6 +74,16 @@ export const authAPI = {
     const response = await api.post('/auth/logout');
     return response.data;
   },
+
+  forgotPassword: async (email) => {
+    const response = await api.post('/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (email, otp, newPassword) => {
+    const response = await api.post('/auth/reset-password', { email, otp, newPassword });
+    return response.data;
+  },
 };
 
 // Services API
@@ -136,6 +146,19 @@ export const ordersAPI = {
 
   getOrderById: async (id) => {
     const response = await api.get(`/orders/${id}`);
+    return response.data;
+  },
+};
+
+// Payment API (Razorpay)
+export const paymentAPI = {
+  createOrder: async (amount) => {
+    const response = await api.post('/payment/create-order', { amount });
+    return response.data;
+  },
+
+  verifyPayment: async (paymentData) => {
+    const response = await api.post('/payment/verify', paymentData);
     return response.data;
   },
 };

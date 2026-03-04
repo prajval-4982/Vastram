@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Loader, CreditCard, Banknote, Smartphone, CheckCircle, Lock, ShieldCheck } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { ordersAPI } from '../services/api';
+import { ordersAPI, paymentAPI } from '../services/api';
 
 const Checkout = () => {
   const { items, getTotalPrice, clearCart } = useCart();
@@ -41,6 +41,17 @@ const Checkout = () => {
     if (!user) navigate('/login');
     else if (items.length === 0 && step !== 3) navigate('/cart');
   }, [user, items, navigate, step]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   if (!user || (items.length === 0 && step !== 3)) return null;
 
@@ -83,16 +94,61 @@ const Checkout = () => {
   const handleContinueToPayment = (e) => {
     e.preventDefault();
     setError('');
+
+    // Validate addresses meet backend minimum (10 chars)
+    if (formData.pickupAddress.trim().length < 10) {
+      setError('Pickup address must be at least 10 characters long.');
+      return;
+    }
+    if (formData.deliveryAddress.trim().length < 10) {
+      setError('Delivery address must be at least 10 characters long.');
+      return;
+    }
+    if (!formData.pickupDate) {
+      setError('Please select a pickup date.');
+      return;
+    }
+    // Ensure pickup date is in the future
+    const selectedDate = new Date(formData.pickupDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate <= today) {
+      setError('Pickup date must be in the future.');
+      return;
+    }
+
     setStep(2);
   };
 
-  const simulatePayment = () => {
-    return new Promise((resolve) => {
-      setPaymentProcessing(true);
-      setTimeout(() => {
-        setPaymentProcessing(false);
-        resolve({ success: true, transactionId: 'TXN' + Date.now() });
-      }, 2500);
+  const openRazorpayCheckout = (rzpOrderData) => {
+    return new Promise((resolve, reject) => {
+      const options = {
+        key: rzpOrderData.keyId,
+        amount: rzpOrderData.amount,
+        currency: rzpOrderData.currency,
+        name: 'Vastram',
+        description: 'Vastram Laundry Services',
+        order_id: rzpOrderData.orderId,
+        handler: function (response) {
+          resolve(response);
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+          contact: user?.phone || '',
+        },
+        theme: {
+          color: '#6366f1',
+        },
+        modal: {
+          ondismiss: function () {
+            reject(new Error('Payment cancelled by user'));
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
     });
   };
 
@@ -101,14 +157,24 @@ const Checkout = () => {
     setError('');
 
     try {
-      // Simulate payment processing for non-COD methods
+      // For non-COD methods, process Razorpay payment
       if (paymentMethod !== 'cash') {
-        const paymentResult = await simulatePayment();
-        if (!paymentResult.success) {
-          setError('Payment failed. Please try again.');
-          setIsLoading(false);
-          return;
-        }
+        setPaymentProcessing(true);
+
+        // Step 1: Create Razorpay order on backend
+        const rzpOrder = await paymentAPI.createOrder(total);
+
+        // Step 2: Open Razorpay checkout modal
+        const paymentResponse = await openRazorpayCheckout(rzpOrder.data);
+
+        // Step 3: Verify payment on backend
+        await paymentAPI.verifyPayment({
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+        });
+
+        setPaymentProcessing(false);
       }
 
       const orderData = {
@@ -131,6 +197,7 @@ const Checkout = () => {
       setStep(3);
     } catch (error) {
       console.error('Order creation failed:', error);
+      setPaymentProcessing(false);
       setError(error.message || 'Failed to place order. Please try again.');
     } finally {
       setIsLoading(false);
@@ -227,6 +294,13 @@ const Checkout = () => {
         {step === 1 && (
           <form onSubmit={handleContinueToPayment} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
+
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+                  <p>{error}</p>
+                </div>
+              )}
+
               <div className="card p-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
                   <MapPin className="w-5 h-5 mr-2" /> Pickup Details
@@ -242,10 +316,12 @@ const Checkout = () => {
                       value={formData.pickupAddress}
                       onChange={handleChange}
                       required
+                      minLength={10}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Enter complete pickup address"
+                      placeholder="Enter complete pickup address (min 10 characters)"
                     />
+                    <p className="text-xs text-gray-400 mt-1">{formData.pickupAddress.length}/10 characters minimum</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -303,10 +379,12 @@ const Checkout = () => {
                       value={formData.deliveryAddress}
                       onChange={handleChange}
                       required
+                      minLength={10}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Enter complete delivery address"
+                      placeholder="Enter complete delivery address (min 10 characters)"
                     />
+                    <p className="text-xs text-gray-400 mt-1">{formData.deliveryAddress.length}/10 characters minimum</p>
                   </div>
 
                   <div>
@@ -380,6 +458,12 @@ const Checkout = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
 
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
+                  <p>{error}</p>
+                </div>
+              )}
+
               {/* Payment Method Selection */}
               <div className="card p-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5">Select Payment Method</h2>
@@ -390,29 +474,29 @@ const Checkout = () => {
                       type="button"
                       onClick={() => setPaymentMethod(pm.id)}
                       className={`w-full flex items-center p-4 rounded-xl border-2 transition-all duration-200 text-left ${paymentMethod === pm.id
-                          ? `border-${pm.color}-500 bg-${pm.color}-50 dark:bg-${pm.color}-900/20 shadow-md`
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                        ? `border-${pm.color}-500 bg-${pm.color}-50 dark:bg-${pm.color}-900/20 shadow-md`
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                         }`}
                     >
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${paymentMethod === pm.id
-                          ? `bg-${pm.color}-100 dark:bg-${pm.color}-900/40`
-                          : 'bg-gray-100 dark:bg-gray-800'
+                        ? `bg-${pm.color}-100 dark:bg-${pm.color}-900/40`
+                        : 'bg-gray-100 dark:bg-gray-800'
                         }`}>
                         <pm.icon className={`w-6 h-6 ${paymentMethod === pm.id
-                            ? `text-${pm.color}-600 dark:text-${pm.color}-400`
-                            : 'text-gray-400'
+                          ? `text-${pm.color}-600 dark:text-${pm.color}-400`
+                          : 'text-gray-400'
                           }`} />
                       </div>
                       <div className="flex-1">
                         <p className={`font-semibold ${paymentMethod === pm.id
-                            ? 'text-gray-900 dark:text-white'
-                            : 'text-gray-700 dark:text-gray-300'
+                          ? 'text-gray-900 dark:text-white'
+                          : 'text-gray-700 dark:text-gray-300'
                           }`}>{pm.label}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{pm.desc}</p>
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === pm.id
-                          ? `border-${pm.color}-500 bg-${pm.color}-500`
-                          : 'border-gray-300 dark:border-gray-600'
+                        ? `border-${pm.color}-500 bg-${pm.color}-500`
+                        : 'border-gray-300 dark:border-gray-600'
                         }`}>
                         {paymentMethod === pm.id && (
                           <div className="w-2 h-2 rounded-full bg-white" />
