@@ -37,10 +37,10 @@ cd Vastram
 
 ### 2. Backend Setup
 \`\`\`bash
-cd server
+cd backend
 npm install
 \`\`\`
-- Create a \`.env\` file in the \`server\` directory using \`.env.example\` as a template. You will need your own MongoDB Atlas Connection URI and a generated JWT Secret string.
+- Create a \`.env\` file in the \`backend\` directory using \`.env.example\` as a template. You will need your own MongoDB Atlas Connection URI and a generated JWT Secret string.
 - Start the server:
 \`\`\`bash
 npm run start
