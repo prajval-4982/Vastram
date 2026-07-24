@@ -44,7 +44,7 @@ const Cart = () => {
           <div className="lg:col-span-2 space-y-4">
             {items.map(item => (
               <div key={item.id} className="card p-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {item.name}

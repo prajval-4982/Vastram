@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Sun, ShoppingCart, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Moon, Sun, ShoppingCart, User, LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
@@ -11,6 +11,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const { getTotalItems } = useCart();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -115,8 +116,56 @@ const Navbar = () => {
                 Login
               </Link>
             )}
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors ml-2"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <Menu className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700 space-y-4">
+            <Link
+              to="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium"
+            >
+              Home
+            </Link>
+            <Link
+              to="/services"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium"
+            >
+              Services
+            </Link>
+            <Link
+              to="/checkout"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-4 py-2 text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors font-bold"
+            >
+              Book Now
+            </Link>
+            {user && user.role === 'admin' && (
+              <Link
+                to="/admin"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-4 py-2 text-purple-600 dark:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium flex items-center gap-2"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Admin Dashboard
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </nav>
   );
