@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: vastram-backend-4982
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGODB_URI
+        value: mongodb+srv://prajval4982:SWsAoP0UZwZSQoHl@vastram.pxtyzrn.mongodb.net/Vastram?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: vastram_super_secret_key_2024
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: http://localhost:5173
