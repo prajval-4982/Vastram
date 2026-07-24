@@ -32,6 +32,7 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:5173',
       'http://localhost:3000',
+      'https://vastram-xi.vercel.app',
       process.env.FRONTEND_URL
     ];
     // Allow requests with no origin (mobile apps, curl, etc.)
