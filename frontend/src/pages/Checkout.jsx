@@ -156,7 +156,6 @@ const Checkout = () => {
           name: user?.name || '',
           email: user?.email || '',
           contact: user?.phone || '',
-          method: paymentMethod === 'upi' ? 'upi' : (paymentMethod === 'card' ? 'card' : undefined)
         },
         theme: {
           color: '#f97316',
