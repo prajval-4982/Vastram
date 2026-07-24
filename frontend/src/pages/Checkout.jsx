@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Calendar, Clock, MapPin, Loader, CreditCard, Banknote, Smartphone, CheckCircle, Lock, ShieldCheck } from 'lucide-react';
@@ -19,13 +20,7 @@ const Checkout = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [cardData, setCardData] = useState({
-    cardNumber: '',
-    cardName: '',
-    expiry: '',
-    cvv: ''
-  });
-  const [upiId, setUpiId] = useState('');
+  // Card/UPI data entry is handled inside Razorpay's own secure modal
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -120,7 +115,32 @@ const Checkout = () => {
     setStep(2);
   };
 
-  const openRazorpayCheckout = (rzpOrderData) => {
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const existingScript = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      if (existingScript) {
+        existingScript.addEventListener('load', () => resolve(true));
+        existingScript.addEventListener('error', () => resolve(false));
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const openRazorpayCheckout = async (rzpOrderData) => {
+    const isLoaded = await loadRazorpayScript();
+    if (!isLoaded || !window.Razorpay) {
+      throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+    }
+
     return new Promise((resolve, reject) => {
       const options = {
         key: rzpOrderData.keyId,
@@ -138,16 +158,19 @@ const Checkout = () => {
           contact: user?.phone || '',
         },
         theme: {
-          color: '#6366f1',
+          color: '#f97316',
         },
         modal: {
           ondismiss: function () {
-            reject(new Error('Payment cancelled by user'));
+            reject(new Error('Payment cancelled by user. You can try again or select Cash on Delivery.'));
           },
         },
       };
 
       const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        reject(new Error(response.error?.description || 'Payment failed. Please try again.'));
+      });
       rzp.open();
     });
   };
@@ -507,127 +530,46 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Card Payment Form */}
-              {paymentMethod === 'card' && (
+              {/* For Card/UPI — Razorpay's own secure modal handles all data entry */}
+              {(paymentMethod === 'card' || paymentMethod === 'upi') && (
                 <div className="card p-6">
-                  <div className="flex items-center mb-5">
+                  <div className="flex items-center mb-4">
                     <Lock className="w-5 h-5 text-green-500 mr-2" />
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Card Details</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      {paymentMethod === 'card' ? 'Pay via Card' : 'Pay via UPI'}
+                    </h2>
                     <span className="ml-auto text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-full font-medium">
-                      🔒 Secure & Encrypted
+                      🔒 Razorpay Secured
                     </span>
                   </div>
 
-                  {/* Mock Card Visual */}
-                  <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 rounded-2xl p-6 mb-6 text-white shadow-xl">
-                    <div className="flex justify-between items-start mb-8">
-                      <div className="w-12 h-9 bg-yellow-300 rounded-md opacity-80" />
-                      <p className="text-sm opacity-70 font-medium">VASTRAM PAY</p>
+                  {/* Razorpay info banner */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800/40 rounded-2xl p-6 text-center">
+                    <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
+                      <ShieldCheck className="w-9 h-9 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <p className="text-xl tracking-widest font-mono mb-4">
-                      {cardData.cardNumber || '•••• •••• •••• ••••'}
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-2">
+                      Razorpay Secure Payment
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      Click <strong>"Pay ₹{total}"</strong> to open the Razorpay payment gateway.
+                      {paymentMethod === 'card'
+                        ? ' Enter your card details securely inside the Razorpay window.'
+                        : ' Choose your UPI app (Google Pay, PhonePe, BHIM) or enter your UPI ID inside the Razorpay window.'}
                     </p>
-                    <div className="flex justify-between text-sm">
-                      <div>
-                        <p className="text-xs opacity-60 uppercase">Card Holder</p>
-                        <p className="font-medium">{cardData.cardName || 'YOUR NAME'}</p>
+                    {paymentMethod === 'upi' && (
+                      <div className="flex items-center justify-center gap-3 mt-2">
+                        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-sm font-bold text-green-600">G</div>
+                        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-sm font-bold text-purple-600">P</div>
+                        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-sm font-bold text-blue-600">B</div>
+                        <span className="text-xs text-gray-400 ml-1">& more</span>
                       </div>
-                      <div>
-                        <p className="text-xs opacity-60 uppercase">Expires</p>
-                        <p className="font-medium">{cardData.expiry || 'MM/YY'}</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Card Number</label>
-                      <input
-                        type="text"
-                        name="cardNumber"
-                        value={cardData.cardNumber}
-                        onChange={handleCardChange}
-                        maxLength={19}
-                        placeholder="1234 5678 9012 3456"
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white font-mono text-lg tracking-wider"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cardholder Name</label>
-                      <input
-                        type="text"
-                        name="cardName"
-                        value={cardData.cardName}
-                        onChange={handleCardChange}
-                        placeholder="Name on card"
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expiry</label>
-                        <input
-                          type="text"
-                          name="expiry"
-                          value={cardData.expiry}
-                          onChange={handleCardChange}
-                          maxLength={5}
-                          placeholder="MM/YY"
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">CVV</label>
-                        <input
-                          type="password"
-                          name="cvv"
-                          value={cardData.cvv}
-                          onChange={handleCardChange}
-                          maxLength={3}
-                          placeholder="•••"
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white font-mono text-center tracking-widest"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-400 mt-4 flex items-center">
-                    <ShieldCheck className="w-4 h-4 mr-1" />
-                    This is a demo payment. No real charges will be made.
-                  </p>
-                </div>
-              )}
-
-              {/* UPI Payment Form */}
-              {paymentMethod === 'upi' && (
-                <div className="card p-6">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-5 flex items-center">
-                    <Smartphone className="w-5 h-5 mr-2" /> UPI Payment
-                  </h2>
-
-                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-6 mb-4">
-                    <div className="flex items-center justify-center gap-4 mb-4">
-                      <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-lg font-bold text-green-600">G</div>
-                      <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-lg font-bold text-purple-600">P</div>
-                      <div className="w-12 h-12 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-lg font-bold text-blue-600">B</div>
-                    </div>
-                    <p className="text-center text-sm text-gray-500 dark:text-gray-400">Google Pay • PhonePe • BHIM UPI</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">UPI ID</label>
-                    <input
-                      type="text"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                      placeholder="yourname@upi"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                    />
-                  </div>
-
-                  <p className="text-xs text-gray-400 mt-4 flex items-center">
-                    <ShieldCheck className="w-4 h-4 mr-1" />
-                    This is a demo payment. No real charges will be made.
+                  <p className="text-xs text-gray-400 mt-4 flex items-center justify-center">
+                    <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                    Your payment info is never stored on our servers. Powered by Razorpay.
                   </p>
                 </div>
               )}

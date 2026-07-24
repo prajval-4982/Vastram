@@ -5,11 +5,12 @@ const { authenticateToken } = require('../middleware/auth.js');
 
 const router = express.Router();
 
-// Initialize Razorpay
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// Helper to get Razorpay instance dynamically
+const getRazorpayInstance = () => {
+  const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_test_SJFgACoSFbtF4G';
+  const key_secret = process.env.RAZORPAY_KEY_SECRET || 'a43q2DeEdYHP9PhdOhx40Y13';
+  return new Razorpay({ key_id, key_secret });
+};
 
 // @route   POST /api/payment/create-order
 // @desc    Create a Razorpay order
@@ -35,6 +36,7 @@ router.post('/create-order', authenticateToken, async (req, res) => {
       },
     };
 
+    const razorpay = getRazorpayInstance();
     const order = await razorpay.orders.create(options);
 
     res.json({
@@ -43,7 +45,7 @@ router.post('/create-order', authenticateToken, async (req, res) => {
         orderId: order.id,
         amount: order.amount,
         currency: order.currency,
-        keyId: process.env.RAZORPAY_KEY_ID,
+        keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_SJFgACoSFbtF4G',
       },
     });
   } catch (error) {

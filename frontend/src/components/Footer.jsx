@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shirt, Phone, Mail, MapPin, Instagram, Facebook, Twitter } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Facebook, Twitter } from 'lucide-react';
+import Logo from './Logo';
 
 const Footer = () => {
     return (
@@ -8,12 +9,10 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
 
-                    {/* Brand */}
+                    {/* Brand — uses new Logo component */}
                     <div className="col-span-1 md:col-span-1">
-                        <Link to="/" className="flex items-center space-x-2 mb-4">
-                            <div className="w-10 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-md flex items-center justify-center shadow-lg shadow-orange-500/20">
-                                <Shirt className="w-5 h-5 text-white" />
-                            </div>
+                        <Link to="/" className="flex items-center space-x-2.5 mb-4 group">
+                            <Logo size={36} className="transition-transform duration-200 group-hover:scale-105" />
                             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
                                 Vastram
                             </span>

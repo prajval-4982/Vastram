@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Plus, Filter, Shirt, Briefcase, Crown, Sofa, Sparkles, Clock } from 'lucide-react';
+import { Plus, Filter, Shirt, Briefcase, Crown, Sofa, Sparkles, Clock, Palette, PackageOpen, Truck, Shield, Leaf, ArrowRight } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { servicesAPI } from '../services/api';
 import ErrorMessage from '../components/ErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-// Category icon and color mapping
+// Category icon and color mapping — each category has a DISTINCT icon
 const categoryConfig = {
   shirts: {
     icon: Shirt,
@@ -32,8 +33,9 @@ const categoryConfig = {
     badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
     glow: 'hover:shadow-amber-500/10 dark:hover:shadow-amber-400/10',
   },
+  /* Casual Wear uses Palette instead of duplicate Shirt — visually distinct at a glance */
   casual: {
-    icon: Shirt,
+    icon: Palette,
     label: 'Casual Wear',
     gradient: 'from-green-500 to-emerald-500',
     darkGradient: 'dark:from-green-600 dark:to-emerald-600',
@@ -138,12 +140,13 @@ const Services = () => {
     }
   };
 
+  /* Category filter options — each with a distinct icon */
   const categoryOptions = [
     { id: 'all', icon: Sparkles, name: 'All Services' },
     { id: 'shirts', icon: Shirt, name: 'Shirts & Tops' },
     { id: 'suits', icon: Briefcase, name: 'Suits & Formal' },
     { id: 'traditional', icon: Crown, name: 'Traditional Wear' },
-    { id: 'casual', icon: Shirt, name: 'Casual Wear' },
+    { id: 'casual', icon: Palette, name: 'Casual Wear' },
     { id: 'home-essentials', icon: Sofa, name: 'Home Essentials' },
   ];
 
@@ -164,6 +167,34 @@ const Services = () => {
       </div>
     );
   }
+
+  /* Trust block data — restyled as icon-card grid matching "Why Choose Vastram" */
+  const trustFeatures = [
+    {
+      icon: <Truck className="w-6 h-6" />,
+      title: 'Free Pickup & Delivery',
+      description: 'Free doorstep service within city limits, same-day pickup before 2 PM',
+      iconBg: 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400',
+    },
+    {
+      icon: <Clock className="w-6 h-6" />,
+      title: 'Express Available',
+      description: 'Express delivery for urgent orders with priority processing',
+      iconBg: 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400',
+    },
+    {
+      icon: <Shield className="w-6 h-6" />,
+      title: '100% Satisfaction',
+      description: 'Full satisfaction guarantee with damage protection for all items',
+      iconBg: 'bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400',
+    },
+    {
+      icon: <Leaf className="w-6 h-6" />,
+      title: 'Eco-Friendly',
+      description: 'Environmentally conscious cleaning products and processes',
+      iconBg: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400',
+    },
+  ];
 
   return (
     <div className="min-h-screen py-8">
@@ -192,7 +223,7 @@ const Services = () => {
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${selectedCategory === category.id
-                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25'
+                      ? 'bg-accent-500 text-white shadow-lg shadow-accent-500/25'
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 ring-1 ring-gray-200 dark:ring-gray-700'
                     }`}
                 >
@@ -212,7 +243,7 @@ const Services = () => {
             return (
               <div
                 key={service._id}
-                className={`bg-white dark:bg-gray-800 rounded-2xl p-6 ring-1 ring-gray-200 dark:ring-gray-700 hover:shadow-xl ${config.glow} transition-all duration-300 flex flex-col`}
+                className={`card p-6 ${config.glow} flex flex-col`}
               >
                 {/* Icon + Category Badge */}
                 <div className="flex items-center justify-between mb-4">
@@ -240,17 +271,17 @@ const Services = () => {
                   </div>
                 </div>
 
-                {/* Price + Add */}
+                {/* Price + Add — uses accent (orange) for primary action consistency */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div>
-                    <span className="text-2xl font-extrabold text-primary-600 dark:text-primary-400">
+                    <span className="text-2xl font-extrabold text-accent-600 dark:text-accent-400">
                       ₹{service.price}
                     </span>
                     <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">/ item</span>
                   </div>
                   <button
                     onClick={() => handleAddToCart(service)}
-                    className="flex items-center gap-1.5 bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-md shadow-accent-500/20 hover:shadow-accent-500/30"
+                    className="flex items-center gap-1.5 bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-xl font-medium transition-all duration-200 shadow-md shadow-accent-500/20 hover:shadow-accent-500/30 active:scale-[0.98]"
                   >
                     <Plus className="w-4 h-4" />
                     Add
@@ -261,39 +292,43 @@ const Services = () => {
           })}
         </div>
 
-        {/* Empty State */}
+        {/* Empty State — icon + message + reset button instead of plain text */}
         {filteredServices.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">No services found in this category.</p>
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-4">
+              <PackageOpen className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2">No services found in this category.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mb-6">Try selecting a different category or view all services.</p>
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className="inline-flex items-center gap-2 btn-primary"
+            >
+              View All Services
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         )}
 
-        {/* Info Section */}
+        {/* Service Information — restyled as icon-card grid matching "Why Choose Vastram" */}
         <div className="mt-16 bg-gradient-to-br from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/10 rounded-2xl p-8 ring-1 ring-primary-100 dark:ring-primary-800/30">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">
             Service Information
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Pickup & Delivery
-              </h3>
-              <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-                <li>• Free pickup and delivery within city limits</li>
-                <li>• Same-day pickup available (before 2 PM)</li>
-                <li>• Express delivery available for urgent orders</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Quality Guarantee
-              </h3>
-              <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-                <li>• 100% satisfaction guarantee</li>
-                <li>• Damage protection for all items</li>
-                <li>• Eco-friendly cleaning products</li>
-              </ul>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {trustFeatures.map((feature, index) => (
+              <div key={index} className="text-center group">
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3 ${feature.iconBg} transition-transform duration-200 group-hover:scale-110`}>
+                  {feature.icon}
+                </div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">
+                  {feature.title}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

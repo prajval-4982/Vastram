@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,23 +15,49 @@
 }
 
 @layer components {
+  /* Primary action buttons — orange for all high-conversion CTAs */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-accent-500 hover:bg-accent-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-md shadow-accent-500/20 hover:shadow-lg hover:shadow-accent-500/30 active:scale-[0.98];
   }
   
+  /* Brand/informational button — blue for secondary/informational actions */
+  .btn-brand {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200;
+  }
+
+  /* Ghost button — outline style for secondary CTAs next to primary buttons */
+  .btn-ghost {
+    @apply border-2 border-white/30 hover:border-white/60 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 hover:bg-white/10 backdrop-blur-sm;
+  }
+  
+  /* Secondary button style */
   .btn-secondary {
-    @apply bg-accent-500 hover:bg-accent-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-accent-500 hover:bg-accent-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 shadow-md shadow-accent-500/20;
   }
   
+  /* Unified card style — consistent across Home and Services */
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 transition-colors duration-300;
+    @apply bg-white dark:bg-gray-800 rounded-2xl ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-300 hover:shadow-xl;
   }
 }
 
-
+/* Wave divider used below hero sections */
+.hero-wave {
+  position: relative;
+}
+.hero-wave::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: inherit;
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
 
 .text-wrapper {
-  white-space: normal;         /* Allows text to wrap */
-  word-break: break-word;      /* Break long words if needed */
-  overflow-wrap: anywhere;     /* Ensures wrapping even in long strings */
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
