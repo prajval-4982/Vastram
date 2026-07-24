@@ -156,6 +156,7 @@ const Checkout = () => {
           name: user?.name || '',
           email: user?.email || '',
           contact: user?.phone || '',
+          method: paymentMethod === 'upi' ? 'upi' : (paymentMethod === 'card' ? 'card' : undefined)
         },
         theme: {
           color: '#f97316',
@@ -530,49 +531,7 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* For Card/UPI — Razorpay's own secure modal handles all data entry */}
-              {(paymentMethod === 'card' || paymentMethod === 'upi') && (
-                <div className="card p-6">
-                  <div className="flex items-center mb-4">
-                    <Lock className="w-5 h-5 text-green-500 mr-2" />
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                      {paymentMethod === 'card' ? 'Pay via Card' : 'Pay via UPI'}
-                    </h2>
-                    <span className="ml-auto text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-full font-medium">
-                      🔒 Razorpay Secured
-                    </span>
-                  </div>
 
-                  {/* Razorpay info banner */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800/40 rounded-2xl p-6 text-center">
-                    <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-                      <ShieldCheck className="w-9 h-9 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 dark:text-white mb-2">
-                      Razorpay Secure Payment
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                      Click <strong>"Pay ₹{total}"</strong> to open the Razorpay payment gateway.
-                      {paymentMethod === 'card'
-                        ? ' Enter your card details securely inside the Razorpay window.'
-                        : ' Choose your UPI app (Google Pay, PhonePe, BHIM) or enter your UPI ID inside the Razorpay window.'}
-                    </p>
-                    {paymentMethod === 'upi' && (
-                      <div className="flex items-center justify-center gap-3 mt-2">
-                        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-sm font-bold text-green-600">G</div>
-                        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-sm font-bold text-purple-600">P</div>
-                        <div className="w-10 h-10 bg-white dark:bg-gray-800 rounded-xl shadow flex items-center justify-center text-sm font-bold text-blue-600">B</div>
-                        <span className="text-xs text-gray-400 ml-1">& more</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-gray-400 mt-4 flex items-center justify-center">
-                    <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-                    Your payment info is never stored on our servers. Powered by Razorpay.
-                  </p>
-                </div>
-              )}
 
               {/* COD Info */}
               {paymentMethod === 'cash' && (
